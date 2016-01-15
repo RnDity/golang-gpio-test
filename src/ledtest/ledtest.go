@@ -7,6 +7,7 @@ import (
 )
 
 func main() {
+	// Raspberry PI LEDs connected via GPIO
 	leds := []led.Led{
 		led.NewGPIO(4),
 		led.NewGPIO(17),

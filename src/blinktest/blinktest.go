@@ -22,6 +22,8 @@ Flags:
 
 var (
 	use_fake  = flag.Bool("usefake", false, "Use fake LEDs")
+
+	// Raspberry PI LEDs connected via GPIO
 	gpio_leds = []led.Led{
 		led.NewGPIO(4),
 		led.NewGPIO(17),

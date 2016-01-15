@@ -31,6 +31,11 @@ import (
 	"time"
 )
 
+type procSetConf struct {
+	revs  int // complete chain passes
+	count int // processes count
+}
+
 const (
 	REVOLUTIONS = 100
 	REV_PROC    = 100000 * REVOLUTIONS
@@ -38,12 +43,14 @@ const (
 	usage = "" +
 		`Usage of 'blinktest' command
 Flags:
-	-usefake=[0|1]:   Use fake LEDs
+	-usefake:    Use fake LEDs
+	-continuous: Toggle GPIO lines for approximately the same time
 `
 )
 
 var (
-	use_fake = flag.Bool("usefake", false, "Use fake LEDs")
+	use_fake   = flag.Bool("usefake", false, "Use fake LEDs")
+	continuous = flag.Bool("continuous", false, "Use fake LEDs")
 
 	// Raspberry PI LEDs connected via GPIO
 	gpio_leds = []led.Led{
@@ -58,6 +65,19 @@ var (
 		led.NewFake(17),
 		led.NewFake(24),
 		led.NewFake(22),
+	}
+	procsetOneByOne = []procSetConf{
+		{REVOLUTIONS, 1000},
+		{REVOLUTIONS, 10000},
+		{REVOLUTIONS, 25000},
+		{REVOLUTIONS, 100000},
+	}
+
+	procsetContinuous = []procSetConf{
+		{REV_PROC / 1000, 1000},
+		{REV_PROC / 10000, 10000},
+		{REV_PROC / 25000, 25000},
+		{REV_PROC / 100000, 100000},
 	}
 )
 
@@ -78,22 +98,27 @@ func main() {
 		leds = gpio_leds
 	}
 
-	for _, l := range leds {
-		l.Init()
+	procset := procsetOneByOne
+	if *continuous {
+		fmt.Println("using continous processes set")
+		procset = procsetContinuous
 	}
 
-	chains := []*chain.Chain{
-		// use this set of chains to toggle GPIOs all the time
-		// chain.New(REV_PROC/1000, 1000, leds[0]),
-		// chain.New(REV_PROC/10000, 10000, leds[1]),
-		// chain.New(REV_PROC/25000, 25000, leds[2]),
-		// chain.New(REV_PROC/100000, 100000, leds[3]),
+	if len(procset) > len(leds) {
+		fmt.Fprintf(os.Stderr, "Processes set larger than avaialble GPIOs")
+		os.Exit(1)
+	}
 
-		// use this set to have the chains exit one by one
-		chain.New(REVOLUTIONS, 1000, leds[0]),
-		chain.New(REVOLUTIONS, 10000, leds[1]),
-		chain.New(REVOLUTIONS, 25000, leds[2]),
-		chain.New(REVOLUTIONS, 100000, leds[3]),
+	// setup process chains
+	chains := make([]*chain.Chain, len(procset))
+	for i := range chains {
+		fmt.Printf("adding chain %d: %d passes %d processes\n",
+			i, procset[i].revs, procset[i].count)
+		chains[i] = chain.New(procset[i].revs, procset[i].count, leds[i])
+	}
+
+	for _, l := range leds {
+		l.Init()
 	}
 
 	fmt.Println("spawning goroutines")

@@ -1,7 +1,7 @@
 # GPIO test tool
 
 A simple tool that recreates functionality of
-(elr-hw)[https://github.com/open-rnd/erl-hw] using Go. The tool also
+[elr-hw](https://github.com/open-rnd/erl-hw) using Go. The tool also
 gives some insight into the performance of Go's scheduler and garbage
 collector. In our case, we've written this code to compare how Go's
 runtime fares when compared to Erlang. As such it may be treated as a

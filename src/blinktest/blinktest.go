@@ -45,12 +45,14 @@ const (
 Flags:
 	-usefake:    Use fake LEDs
 	-continuous: Toggle GPIO lines for approximately the same time
+	-useyield:   Enable voluntary CPU yielding by chain processes
 `
 )
 
 var (
 	use_fake   = flag.Bool("usefake", false, "Use fake LEDs")
 	continuous = flag.Bool("continuous", false, "Use fake LEDs")
+	use_yield  = flag.Bool("useyield", false, "Enable voluntary CPU yielding")
 
 	// Raspberry PI LEDs connected via GPIO
 	gpio_leds = []led.Led{
@@ -88,6 +90,11 @@ func main() {
 	}
 
 	flag.Parse()
+
+	if *use_yield {
+		fmt.Println("enable voluntary yielding")
+		chain.SetYield(true)
+	}
 
 	var leds []led.Led
 

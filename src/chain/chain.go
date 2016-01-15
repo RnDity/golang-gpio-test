@@ -25,6 +25,11 @@ package chain
 import (
 	"fmt"
 	"led"
+	"runtime"
+)
+
+var (
+	enableYield = false // use voluntary Gosched()
 )
 
 type token struct {
@@ -76,6 +81,12 @@ func tokenpass(chans *chanpair, maxrevs int, done chan bool, toggle_chain int, l
 			close(chans.out)
 			return
 		}
+
+		// yield CPU
+		if enableYield {
+			runtime.Gosched()
+		}
+
 		// fmt.Printf("token: %s\n", tok)
 
 		new_chain := tok.chain + 1
@@ -144,4 +155,9 @@ func (chain *Chain) Start() {
 func (chain *Chain) Wait() {
 	<-chain.done
 	close(chain.done)
+}
+
+// Enable voluntary CPU yield
+func SetYield(yield bool) {
+	enableYield = yield
 }

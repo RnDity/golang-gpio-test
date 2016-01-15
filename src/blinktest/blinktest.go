@@ -2,29 +2,57 @@ package main
 
 import (
 	"chain"
+	"flag"
 	"fmt"
 	"led"
+	"os"
 	"time"
 )
 
 const (
 	REVOLUTIONS = 100
 	REV_PROC = 100000 * REVOLUTIONS
+
+	usage = "" +
+		`Usage of 'blinktest' command
+Flags:
+	-usefake=[0|1]:   Use fake LEDs
+`
 )
 
-func main() {
-	leds := []led.Led{
+var (
+	use_fake  = flag.Bool("usefake", false, "Use fake LEDs")
+	gpio_leds = []led.Led{
 		led.NewGPIO(4),
 		led.NewGPIO(17),
 		led.NewGPIO(27),
 		led.NewGPIO(22),
 	}
-	// leds := []led.Led{
-	// 	led.NewFake(4),
-	// 	led.NewFake(17),
-	// 	led.NewFake(24),
-	// 	led.NewFake(22),
-	// }
+
+	fake_leds = []led.Led{
+		led.NewFake(4),
+		led.NewFake(17),
+		led.NewFake(24),
+		led.NewFake(22),
+	}
+)
+
+func main() {
+	flag.Usage = func() {
+		fmt.Println(usage)
+		os.Exit(1)
+	}
+
+	flag.Parse()
+
+	var leds []led.Led
+
+	if *use_fake {
+		fmt.Println("using fake LEDs")
+		leds = fake_leds
+	} else {
+		leds = gpio_leds
+	}
 
 	for _, l := range leds {
 		l.Init()

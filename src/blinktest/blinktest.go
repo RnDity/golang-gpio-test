@@ -9,6 +9,7 @@ import (
 
 const (
 	REVOLUTIONS = 100
+	REV_PROC = 100000 * REVOLUTIONS
 )
 
 func main() {
@@ -30,10 +31,10 @@ func main() {
 	}
 
 	chains := []*chain.Chain{
-		chain.New(REVOLUTIONS, 1000, leds[0]),
-		chain.New(REVOLUTIONS, 10000, leds[1]),
-		chain.New(REVOLUTIONS, 25000, leds[2]),
-		chain.New(REVOLUTIONS, 100000, leds[3]),
+		chain.New(REV_PROC / 1000, 1000, leds[0]),
+		chain.New(REV_PROC / 10000, 10000, leds[1]),
+		chain.New(REV_PROC / 25000, 25000, leds[2]),
+		chain.New(REV_PROC / 100000, 100000, leds[3]),
 	}
 
 	fmt.Println("spawning goroutines")

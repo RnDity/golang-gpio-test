@@ -26,12 +26,29 @@ type Chain struct {
 	done        chan bool
 }
 
+func (c *chanpair) getToken() (token, bool) {
+	tok, more := <-c.in
+	return tok, more
+}
+
+// Pass token to channel
+func (c *chanpair) passToken(t token) {
+	c.out <- t
+}
+
+// Close channel pair output
+func (c *chanpair) closeOut() {
+	// close output
+	close(c.out)
+
+}
+
 // Pass the token around and toggle LED state if current chain number
 // is equal to toggle_chain.
-func tokenpass(chans chanpair, maxrevs int, done chan bool, toggle_chain int, led led.Led) {
+func tokenpass(chans *chanpair, maxrevs int, done chan bool, toggle_chain int, led led.Led) {
 
 	for {
-		tok, more := <-chans.in
+		tok, more := chans.getToken()
 
 		if more == false {
 			close(chans.out)
@@ -41,16 +58,15 @@ func tokenpass(chans chanpair, maxrevs int, done chan bool, toggle_chain int, le
 
 		new_chain := tok.chain + 1
 		if new_chain != toggle_chain {
-			chans.out <- token{new_chain, tok.revolution}
+			chans.passToken(token{new_chain, tok.revolution})
 		} else {
 			// already finishing?
 			if tok.revolution < maxrevs {
-				chans.out <- token{0, tok.revolution + 1}
+				chans.passToken(token{0, tok.revolution + 1})
 				led.Toggle()
 			} else {
 				fmt.Printf("set %d %d done\n", maxrevs, toggle_chain)
-				// close output
-				close(chans.out)
+				chans.closeOut()
 
 				done <- true
 				return
@@ -94,7 +110,7 @@ func New(revs int, count int, led led.Led) *Chain {
 
 func (chain *Chain) Spawn() {
 	for i := range chain.procs {
-		go tokenpass(chain.procs[i], chain.revolutions, chain.done,
+		go tokenpass(&chain.procs[i], chain.revolutions, chain.done,
 			len(chain.procs), chain.led)
 	}
 }

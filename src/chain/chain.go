@@ -26,6 +26,7 @@ import (
 	"fmt"
 	"led"
 	"runtime"
+	"sync"
 )
 
 var (
@@ -50,7 +51,7 @@ type Chain struct {
 	revolutions int
 	procs       []chanpair
 	led         led.Led
-	done        chan bool
+	wg          sync.WaitGroup
 }
 
 func (c *chanpair) getToken() (token, bool) {
@@ -72,13 +73,15 @@ func (c *chanpair) closeOut() {
 
 // Pass the token around and toggle LED state if current chain number
 // is equal to toggle_chain.
-func tokenpass(chans *chanpair, maxrevs int, done chan bool, toggle_chain int, led led.Led) {
+func tokenpass(chans *chanpair, maxrevs int, toggle_chain int, wg *sync.WaitGroup, led led.Led) {
+
+	defer wg.Done()
 
 	for {
 		tok, more := chans.getToken()
 
 		if more == false {
-			close(chans.out)
+			chans.closeOut()
 			return
 		}
 
@@ -101,7 +104,6 @@ func tokenpass(chans *chanpair, maxrevs int, done chan bool, toggle_chain int, l
 				fmt.Printf("set %d %d done\n", maxrevs, toggle_chain)
 				chans.closeOut()
 
-				done <- true
 				return
 			}
 		}
@@ -113,7 +115,7 @@ func New(revs int, count int, led led.Led) *Chain {
 		revs,
 		make([]chanpair, count),
 		led,
-		make(chan bool),
+		sync.WaitGroup{},
 	}
 
 	first := make_token_chan()
@@ -143,9 +145,10 @@ func New(revs int, count int, led led.Led) *Chain {
 
 func (chain *Chain) Spawn() {
 	for i := range chain.procs {
-		go tokenpass(&chain.procs[i], chain.revolutions, chain.done,
-			len(chain.procs), chain.led)
+		go tokenpass(&chain.procs[i], chain.revolutions,
+			len(chain.procs), &chain.wg, chain.led)
 	}
+	chain.wg.Add(len(chain.procs))
 }
 
 func (chain *Chain) Start() {
@@ -153,8 +156,7 @@ func (chain *Chain) Start() {
 }
 
 func (chain *Chain) Wait() {
-	<-chain.done
-	close(chain.done)
+	chain.wg.Wait()
 }
 
 // Enable voluntary CPU yield

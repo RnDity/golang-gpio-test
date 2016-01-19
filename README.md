@@ -50,4 +50,4 @@ however they provide a nice visual feedback.
 
 ## Raspberry Pi
 
-The benchmark uses 4 GPIO pins: 4, 17, 24, 22.
+The benchmark uses 4 GPIO pins: 4, 17, 27, 22.

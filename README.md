@@ -8,7 +8,7 @@ runtime fares when compared to Erlang. As such it may be treated as a
 benchmark of sorts, however make sure to take the results with a grain
 of salt.
 
-## Contept
+## Concept
 
 The idea is to measure how the system behaves when a large number of
 processes is spawned. The do this the benchmark will create a couple

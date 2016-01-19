@@ -51,3 +51,16 @@ however they provide a nice visual feedback.
 ## Raspberry Pi
 
 The benchmark uses 4 GPIO pins: 4, 17, 27, 22.
+
+## BeagleBone Black
+
+Make sure to set `GOARM=7` when building. GPIO pins: 67 (P8.08), 68
+(P8.10), 44 (P8.12), 24 (P8.14).
+
+The GPIO pins can be assigned multiple functions, you need to
+configure them into GPIO mode before running the benchmark. This can
+be done by running a `config-pin` helper tool like this:
+
+```
+for p in P8.08 P8.10 P8.12 P8.14; do config-pin $p gpio; done
+```

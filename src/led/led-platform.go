@@ -7,9 +7,10 @@ import (
 type ledGetter func() []Led
 
 var (
-	platforms = map[string]ledGetter {
+	platforms = map[string]ledGetter{
 		"raspberrypi": GetRaspberryPiLEDs,
-		"fake": GetFakeLEDs,
+		"beaglebone":  GetBeagleBoneBlackLEDs,
+		"fake":        GetFakeLEDs,
 	}
 )
 

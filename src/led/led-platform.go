@@ -11,6 +11,7 @@ var (
 		"raspberrypi": GetRaspberryPiLEDs,
 		"beaglebone":  GetBeagleBoneBlackLEDs,
 		"fake":        GetFakeLEDs,
+		"olimexa20":   GetOlimexA20LEDs,
 	}
 )
 

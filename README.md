@@ -64,3 +64,8 @@ be done by running a `config-pin` helper tool like this:
 ```
 for p in P8.08 P8.10 P8.12 P8.14; do config-pin $p gpio; done
 ```
+
+## Olimex OLinuXino-A20 Lime
+
+Make sure to set `GOARM=7` when building. GPIO pins on GPIO-3 header:
+35 (PB3), 37 (PB5), 39 (PB7), 40 (PB10).

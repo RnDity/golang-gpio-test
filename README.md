@@ -54,8 +54,8 @@ The benchmark uses 4 GPIO pins: 4, 17, 27, 22.
 
 ## BeagleBone Black
 
-Make sure to set `GOARM=7` when building. GPIO pins: 67 (P8.08), 68
-(P8.10), 44 (P8.12), 24 (P8.14).
+Make sure to set `GOARM=7` when building. GPIO pins on P8 header: 67
+(P8.08), 68 (P8.10), 44 (P8.12), 24 (P8.14).
 
 The GPIO pins can be assigned multiple functions, you need to
 configure them into GPIO mode before running the benchmark. This can

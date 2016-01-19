@@ -41,33 +41,24 @@ const (
 	REV_PROC    = 100000 * REVOLUTIONS
 
 	usage = "" +
-		`Usage of 'blinktest' command
+		`Usage of 'blinktest' command:
+
+	blinktest [flags] <platform-name>
+
 Flags:
-	-usefake:    Use fake LEDs
-	-continuous: Toggle GPIO lines for approximately the same time
-	-useyield:   Enable voluntary CPU yielding by chain processes
+	-usefake:       Use fake LEDs
+	-continuous:    Toggle GPIO lines for approximately the same time
+	-useyield:      Enable voluntary CPU yielding by chain processes
+	-listplatforms: List available platforms
 `
 )
 
 var (
-	use_fake   = flag.Bool("usefake", false, "Use fake LEDs")
-	continuous = flag.Bool("continuous", false, "Use fake LEDs")
-	use_yield  = flag.Bool("useyield", false, "Enable voluntary CPU yielding")
+	use_fake       = flag.Bool("usefake", false, "Use fake LEDs")
+	continuous     = flag.Bool("continuous", false, "Use fake LEDs")
+	use_yield      = flag.Bool("useyield", false, "Enable voluntary CPU yielding")
+	list_platforms = flag.Bool("listplatforms", false, "List avaialable platforms")
 
-	// Raspberry PI LEDs connected via GPIO
-	gpio_leds = []led.Led{
-		led.NewGPIO(4),
-		led.NewGPIO(17),
-		led.NewGPIO(27),
-		led.NewGPIO(22),
-	}
-
-	fake_leds = []led.Led{
-		led.NewFake(4),
-		led.NewFake(17),
-		led.NewFake(24),
-		led.NewFake(22),
-	}
 	procsetOneByOne = []procSetConf{
 		{REVOLUTIONS, 1000},
 		{REVOLUTIONS, 10000},
@@ -83,6 +74,13 @@ var (
 	}
 )
 
+func listPlatforms() {
+	fmt.Println("Available platforms:")
+	for _, p := range led.ListPlatforms() {
+		fmt.Printf("  %s\n", p)
+	}
+}
+
 func main() {
 	flag.Usage = func() {
 		fmt.Println(usage)
@@ -91,18 +89,27 @@ func main() {
 
 	flag.Parse()
 
+	if *list_platforms {
+		listPlatforms()
+		os.Exit(0)
+	}
+
+	if flag.NArg() < 1 {
+		fmt.Println("Platform not specified, see -help for usage information")
+		os.Exit(1)
+	}
+
+	platform := flag.Arg(0)
+
 	if *use_yield {
 		fmt.Println("enable voluntary yielding")
 		chain.SetYield(true)
 	}
 
-	var leds []led.Led
-
-	if *use_fake {
-		fmt.Println("using fake LEDs")
-		leds = fake_leds
-	} else {
-		leds = gpio_leds
+	leds := led.LEDsForPlatform(platform)
+	if len(leds) == 0 {
+		fmt.Printf("no leds for platform '%s'\n", platform)
+		os.Exit(1)
 	}
 
 	procset := procsetOneByOne

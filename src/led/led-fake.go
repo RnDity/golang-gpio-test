@@ -79,3 +79,12 @@ func (l *fakeLed) Init() bool {
 func (l *fakeLed) Close() {
 
 }
+
+func GetFakeLEDs() []Led {
+	return []Led{
+		NewFake(4),
+		NewFake(17),
+		NewFake(24),
+		NewFake(22),
+	}
+}

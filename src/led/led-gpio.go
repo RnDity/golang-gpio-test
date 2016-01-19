@@ -113,3 +113,12 @@ func (l *gpioLed) Close() {
 	}
 	unexport_gpio(l.pin)
 }
+
+func NewForGPIOPins(pins []int) []Led {
+	var leds []Led
+
+	for _, pin := range pins {
+		leds = append(leds, NewGPIO(pin))
+	}
+	return leds
+}
